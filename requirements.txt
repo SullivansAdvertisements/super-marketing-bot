@@ -1,0 +1,7 @@
+streamlit==1.37.1
+pandas==2.2.2
+numpy==2.0.1
+requests==2.32.3
+pytrends==4.9.2
+openai==1.40.3
+python-dotenv==1.0.1

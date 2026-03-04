@@ -59,74 +59,78 @@ if logo.exists():
 
 st.markdown('<div class="gold-glow">Sullivan Marketing OS V6.5</div>', unsafe_allow_html=True)
 
-tabs = st.tabs(["Clients","Creative AI","Campaign Builder","Meta Launch","Reporting","Logs"])
+tabs = st.tabs(["Clients", "Creative AI", "Campaign Builder", "Meta Launch", "Reporting", "Logs"])
 
 # CLIENTS
 with tabs[0]:
     st.header("Client Manager")
-    name = st.text_input("Client Name")
-    notes = st.text_area("Notes")
 
-    if st.button("Add Client"):
-        db.insert("clients",{"name":name,"notes":notes})
+    client_name = st.text_input("Client Name", key="clients_name")
+    client_notes = st.text_area("Notes", key="clients_notes")
 
-    st.dataframe(pd.DataFrame(db.list("clients")))
+    if st.button("Add Client", key="clients_add_btn"):
+        db.insert("clients", {"name": client_name, "notes": client_notes})
+
+    st.dataframe(pd.DataFrame(db.list("clients")), use_container_width=True)
 
 # CREATIVE
 with tabs[1]:
     st.header("AI Creative Generator")
 
-    brand = st.text_input("Brand")
-    offer = st.text_input("Offer")
-    platform = st.selectbox("Platform",["Meta","Google","TikTok","YouTube"])
-    audience = st.text_input("Audience")
+    brand = st.text_input("Brand", key="creative_brand")
+    offer = st.text_input("Offer", key="creative_offer")
+    creative_platform = st.selectbox("Platform", ["Meta", "Google", "TikTok", "YouTube"], key="creative_platform")
+    audience = st.text_input("Audience", key="creative_audience")
 
-    if st.button("Generate Creative"):
-        st.write(generate_pack(brand,offer,platform,audience))
+    if st.button("Generate Creative", key="creative_generate_btn"):
+        st.write(generate_pack(brand, offer, creative_platform, audience))
 
 # CAMPAIGN BUILDER
 with tabs[2]:
     st.header("Campaign Builder")
 
-    name = st.text_input("Campaign Name")
-    platform = st.selectbox("Platform",["Meta","Google"])
-    budget = st.number_input("Budget",10)
-    geo = st.text_input("Geo","US")
-    interests = st.text_input("Interests","music,hiphop")
-    landing = st.text_input("Landing Page")
+    campaign_name = st.text_input("Campaign Name", key="builder_campaign_name")
+    builder_platform = st.selectbox("Platform", ["Meta", "Google"], key="builder_platform")
+    budget = st.number_input("Budget", 10, key="builder_budget")
+    geo = st.text_input("Geo", "US", key="builder_geo")
+    interests = st.text_input("Interests", "music,hiphop", key="builder_interests")
+    landing = st.text_input("Landing Page", key="builder_landing")
 
-    if st.button("Save Campaign"):
-        spec = CampaignSpec(name,platform,budget,geo,interests,landing)
-        db.insert("campaigns",{
-            "name":name,
-            "platform":platform,
-            "payload":json.dumps(spec.to_dict())
-        })
+    if st.button("Save Campaign", key="builder_save_btn"):
+        spec = CampaignSpec(campaign_name, builder_platform, budget, geo, interests, landing)
+        db.insert(
+            "campaigns",
+            {
+                "name": campaign_name,
+                "platform": builder_platform,
+                "payload": json.dumps(spec.to_dict()),
+            },
+        )
 
-    st.dataframe(pd.DataFrame(db.list("campaigns")))
+    st.dataframe(pd.DataFrame(db.list("campaigns")), use_container_width=True)
 
 # META LAUNCH
 with tabs[3]:
     st.header("Meta Campaign Launch")
 
-    ad_account = st.text_input("Ad Account ID")
-    token = st.text_input("Access Token")
-    name = st.text_input("Campaign Name")
+    ad_account = st.text_input("Ad Account ID", key="meta_launch_ad_account")
+    access_token = st.text_input("Access Token", key="meta_launch_access_token")
+    launch_campaign_name = st.text_input("Campaign Name", key="meta_launch_campaign_name")
 
-    if st.button("Create Campaign"):
-        st.write(create_campaign(ad_account,token,name))
+    if st.button("Create Campaign", key="meta_launch_create_btn"):
+        st.write(create_campaign(ad_account, access_token, launch_campaign_name))
 
 # REPORTING
 with tabs[4]:
     st.header("Meta Reporting Dashboard")
 
-    cid = st.text_input("Campaign ID")
-    token = st.text_input("Token")
+    campaign_id = st.text_input("Campaign ID", key="reporting_campaign_id")
+    reporting_token = st.text_input("Token", key="reporting_token")
 
-    if st.button("Fetch Insights"):
-        st.write(insights(cid,token))
+    if st.button("Fetch Insights", key="reporting_fetch_btn"):
+        st.write(insights(campaign_id, reporting_token))
 
 # LOGS
 with tabs[5]:
     st.header("System Logs")
-    st.dataframe(pd.DataFrame(db.list("logs")))
+    st.dataframe(pd.DataFrame(db.list("logs")), use_container_width=True)

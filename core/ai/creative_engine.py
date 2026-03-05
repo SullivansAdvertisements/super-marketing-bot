@@ -3,40 +3,34 @@ import streamlit as st
 
 try:
     from openai import OpenAI
-except Exception as e:
+except Exception:
     OpenAI = None
 
 
-def _get_openai_key() -> str:
-    # Streamlit Cloud: st.secrets is the reliable place
+def _key():
+    # Streamlit secrets first (Streamlit Cloud)
     try:
-        v = st.secrets.get("OPENAI_API_KEY", "")
-        if v:
-            return v
+        k = st.secrets.get("OPENAI_API_KEY", "")
+        if k:
+            return k
     except Exception:
         pass
-
-    # Fallback to env var (works locally if you export it)
+    # env fallback (local)
     return os.getenv("OPENAI_API_KEY", "")
 
 
-def generate_pack(brand: str, offer: str, platform: str, audience: str):
+def generate_pack(brand, offer, platform, audience):
     if OpenAI is None:
-        raise RuntimeError("OpenAI SDK not installed. Add `openai` to requirements.txt.")
+        raise RuntimeError("OpenAI SDK not installed. Add `openai` to requirements.txt")
 
-    api_key = _get_openai_key()
+    api_key = _key()
     if not api_key:
-        raise RuntimeError("Missing OPENAI_API_KEY. Add it in Streamlit Cloud → Settings → Secrets.")
+        raise RuntimeError("OPENAI_API_KEY is missing in Streamlit Secrets.")
 
     client = OpenAI(api_key=api_key)
 
     prompt = f"""
-Return JSON with:
-hooks
-angles
-headlines
-descriptions
-scripts
+Return JSON with: hooks, angles, headlines, descriptions, scripts.
 
 Brand: {brand}
 Offer: {offer}
@@ -44,14 +38,13 @@ Platform: {platform}
 Audience: {audience}
 """.strip()
 
-    try:
-        r = client.responses.create(
-            model="gpt-4o-mini",
-            input=prompt,
-        )
-        return r.output_text
+    # Model fallback so you don’t get stuck if one model isn’t allowed
+    last_err = None
+    for model in ["gpt-4.1-mini", "gpt-4o-mini"]:
+        try:
+            r = client.responses.create(model=model, input=prompt)
+            return r.output_text
+        except Exception as e:
+            last_err = e
 
-    except Exception as e:
-        # Show the real API error reason in Streamlit
-        # Many OpenAI errors include a status code + message in str(e)
-        raise RuntimeError(f"OpenAI request failed: {e}") from e
+    raise RuntimeError(f"OpenAI request failed: {last_err}")

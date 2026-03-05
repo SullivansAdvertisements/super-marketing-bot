@@ -83,7 +83,12 @@ with tabs[1]:
     audience = st.text_input("Audience", key="creative_audience")
 
     if st.button("Generate Creative", key="creative_generate_btn"):
-        st.write(generate_pack(brand, offer, creative_platform, audience))
+    try:
+    out = generate_pack(brand, offer, creative_platform, audience)
+    st.write(out)
+except Exception as e:
+    st.error("OpenAI call failed — details below:")
+    st.exception(e)  # <-- this prints the REAL message (401/429/404 etc.)
 
 # CAMPAIGN BUILDER
 with tabs[2]:
